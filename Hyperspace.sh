@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# 脚本保存路径
+SCRIPT_PATH="$HOME/Hyperspace.sh"
+
 # 主菜单函数
 function main_menu() {
     while true; do
