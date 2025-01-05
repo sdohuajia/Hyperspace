@@ -58,13 +58,13 @@ function deploy_hyperspace_node() {
     screen -S "$screen_name" -X detach
     sleep 5
 
-    # 提示用户输入私钥并保存为 .pem 文件
+    # 提示用户输入私钥并保存为 my.pem 文件
     echo "请输入你的私钥（按 CTRL+D 结束）："
-    cat > .pem
+    cat > my.pem
 
-    # 使用 .pem 文件运行 import-keys 命令
-    echo "正在使用 .pem 文件运行 import-keys 命令..."
-    aios-cli hive import-keys ./.pem
+    # 使用 my.pem 文件运行 import-keys 命令
+    echo "正在使用 my.pem 文件运行 import-keys 命令..."
+    aios-cli hive import-keys ./my.pem
     sleep 5
 
     # 定义模型变量
