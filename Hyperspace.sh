@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# 脚本保存路径
-SCRIPT_PATH="$HOME/Hyperspace.sh"
-
 # 主菜单函数
 function main_menu() {
     while true; do
@@ -27,6 +24,19 @@ function main_menu() {
 
 # 部署hyperspace节点
 function deploy_hyperspace_node() {
+    # 执行安装命令
+    echo "正在执行安装命令：curl https://download.hyper.space/api/install | bash"
+    curl https://download.hyper.space/api/install | bash
+
+    # 刷新环境变量
+    echo "执行 'source /root/.bashrc' 更新环境变量"
+    source /root/.bashrc
+
+    # 创建文件夹 'hyperspace' 并进入该目录
+    echo "创建名为 'hyperspace' 的文件夹并进入该目录"
+    mkdir -p /root/hyperspace
+    cd /root/hyperspace
+
     # 提示输入屏幕名称，默认值为 'hyperspace'
     read -p "请输入屏幕名称 (默认值: hyperspace): " screen_name
     screen_name=${screen_name:-hyperspace}
