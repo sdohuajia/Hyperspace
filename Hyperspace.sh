@@ -34,11 +34,6 @@ function deploy_hyperspace_node() {
     echo "执行 'source /root/.bashrc' 更新环境变量"
     source /root/.bashrc
 
-    # 创建文件夹 'hyperspace' 并进入该目录
-    echo "创建名为 'hyperspace' 的文件夹并进入该目录"
-    mkdir -p /root/hyperspace
-    cd /root/hyperspace
-
     # 提示输入屏幕名称，默认值为 'hyper'
     read -p "请输入屏幕名称 (默认值: hyper): " screen_name
     screen_name=${screen_name:-hyper}
