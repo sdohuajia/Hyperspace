@@ -39,6 +39,17 @@ function deploy_hyperspace_node() {
     screen_name=${screen_name:-hyper}
     echo "使用的屏幕名称是: $screen_name"
 
+    # 清理已存在的 'hyper' 屏幕会话
+    echo "检查并清理现有的 'hyper' 屏幕会话..."
+    screen -ls | grep "$screen_name" &>/dev/null
+    if [ $? -eq 0 ]; then
+        echo "找到现有的 '$screen_name' 屏幕会话，正在停止并删除..."
+        screen -S "$screen_name" -X quit
+        sleep 2
+    else
+        echo "没有找到现有的 '$screen_name' 屏幕会话。"
+    fi
+
     # 创建一个新的屏幕会话
     echo "创建一个名为 '$screen_name' 的屏幕会话..."
     screen -S "$screen_name" -dm
@@ -62,8 +73,13 @@ function deploy_hyperspace_node() {
     # 使用 my.pem 文件运行 import-keys 命令
     echo "正在使用 my.pem 文件运行 import-keys 命令..."
 
-    # 确保环境变量更新
+    # 确保环境变量已经生效
+    echo "确保环境变量更新..."
     source /root/.bashrc
+    sleep 2  # 等待2秒确保环境变量加载
+
+    # 打印当前 PATH，确保 aios-cli 在其中
+    echo "当前 PATH: $PATH"
     
     # 运行 import-keys 命令
     aios-cli hive import-keys ./my.pem
