@@ -153,18 +153,13 @@ function view_points() {
 
 # 删除节点（停止节点）
 function delete_node() {
-    echo "正在停止hyperspace节点..."
+    echo "正在使用 'aios-cli kill' 停止节点..."
+
+    # 执行 aios-cli kill 停止节点
+    aios-cli kill
+    sleep 2
     
-    # 查找是否有正在运行的 aios-cli 进程
-    pid=$(ps aux | grep '[a]ios-cli' | awk '{print $2}')
-    if [ -z "$pid" ]; then
-        echo "没有找到正在运行的 'aios-cli' 进程。"
-    else
-        # 使用 kill 命令终止进程
-        echo "停止正在运行的 'aios-cli' 进程 (PID: $pid)..."
-        kill -9 "$pid"
-        echo "'aios-cli' 进程已停止。"
-    fi
+    echo "'aios-cli kill' 执行完成，节点已停止。"
 
     # 提示用户按任意键返回主菜单
     read -n 1 -s -r -p "按任意键返回主菜单..."
