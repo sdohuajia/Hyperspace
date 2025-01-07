@@ -10,13 +10,15 @@ function main_menu() {
         echo "退出脚本，请按键盘 ctrl + C 退出即可"
         echo "请选择要执行的操作:"
         echo "1. 部署hyperspace节点"
-        echo "2. 退出脚本"
+        echo "2. 查看积分"
+        echo "3. 退出脚本"
         echo "================================================================"
-        read -p "请输入选择的操作编号 (1/2): " choice
+        read -p "请输入选择的操作编号 (1/2/3): " choice
 
         case $choice in
             1)  deploy_hyperspace_node ;;
-            2)  exit_script ;;
+            2)  view_points ;;
+            3)  exit_script ;;
             *)  echo "无效选择，请重新输入！"; sleep 2 ;;
         esac
     done
@@ -82,37 +84,30 @@ function deploy_hyperspace_node() {
         fi
     done
 
-    # 使用已添加的模型进行推理
-    echo "正在使用已添加的模型进行推理..."
-    infer_prompt="你好，你能解释一下 YouTube 频道 Share It Hub 吗？"
-    while true; do
-        if aios-cli infer --model "$model" --prompt "$infer_prompt"; then
-            echo "推理成功。"
-            break
-        else
-            echo "执行推理时发生错误，正在重试..."
-            sleep 3
-        fi
-    done
-
     # 登录并选择等级
     echo "正在登录并选择等级..."
+
+    # 登录到 Hive
     aios-cli hive login
-    aios-cli hive select-tier 5
+
+    # 提示用户选择等级
+    echo "请选择等级（1-5）："
+    select tier in 1 2 3 4 5; do
+        case $tier in
+            1|2|3|4|5)
+                echo "你选择了等级 $tier"
+                aios-cli hive select-tier $tier
+                break
+                ;;
+            *)
+                echo "无效的选择，请输入 1 到 5 之间的数字。"
+                ;;
+        esac
+    done
+
+    # 连接到 Hive
     aios-cli hive connect
     sleep 5
-
-    # 使用已添加的模型运行 Hive 推理
-    echo "正在使用已添加的模型运行 Hive 推理..."
-    while true; do
-        if aios-cli hive infer --model "$model" --prompt "$infer_prompt"; then
-            echo "Hive 推理成功。"
-            break
-        else
-            echo "执行 Hive 推理时发生错误，正在重试..."
-            sleep 3
-        fi
-    done
 
     # 停止 aios-cli 进程
     echo "使用 'aios-cli kill' 停止 'aios-cli start' 进程..."
@@ -123,6 +118,13 @@ function deploy_hyperspace_node() {
     screen -S "$screen_name" -X stuff "echo '等待 5 秒后运行命令...'; aios-cli start --connect\n"
 
     echo "部署hyperspace节点完成，'aios-cli start --connect' 已在屏幕内运行，系统已恢复到后台。"
+}
+
+# 查看积分
+function view_points() {
+    echo "正在查看积分..."
+    aios-cli hive points
+    sleep 2
 }
 
 # 退出脚本
