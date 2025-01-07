@@ -11,14 +11,16 @@ function main_menu() {
         echo "请选择要执行的操作:"
         echo "1. 部署hyperspace节点"
         echo "2. 查看积分"
-        echo "3. 退出脚本"
+        echo "3. 删除节点（停止节点）"
+        echo "4. 退出脚本"
         echo "================================================================"
-        read -p "请输入选择 (1/2/3): " choice
+        read -p "请输入选择 (1/2/3/4): " choice
 
         case $choice in
             1)  deploy_hyperspace_node ;;
             2)  view_points ;;
-            3)  exit_script ;;
+            3)  delete_node ;;
+            4)  exit_script ;;
             *)  echo "无效选择，请重新输入！"; sleep 2 ;;
         esac
     done
@@ -147,6 +149,26 @@ function view_points() {
     source /root/.bashrc
     aios-cli hive points
     sleep 2
+}
+
+# 删除节点（停止节点）
+function delete_node() {
+    echo "正在停止hyperspace节点..."
+    
+    # 查找是否有正在运行的 aios-cli 进程
+    pid=$(ps aux | grep '[a]ios-cli' | awk '{print $2}')
+    if [ -z "$pid" ]; then
+        echo "没有找到正在运行的 'aios-cli' 进程。"
+    else
+        # 使用 kill 命令终止进程
+        echo "停止正在运行的 'aios-cli' 进程 (PID: $pid)..."
+        kill -9 "$pid"
+        echo "'aios-cli' 进程已停止。"
+    fi
+
+    # 提示用户按任意键返回主菜单
+    read -n 1 -s -r -p "按任意键返回主菜单..."
+    main_menu
 }
 
 # 退出脚本
