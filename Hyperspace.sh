@@ -13,7 +13,7 @@ function main_menu() {
         echo "2. 查看积分"
         echo "3. 退出脚本"
         echo "================================================================"
-        read -p "请输入选择的操作编号 (1/2/3): " choice
+        read -p "请输入选择 (1/2/3): " choice
 
         case $choice in
             1)  deploy_hyperspace_node ;;
