@@ -66,6 +66,11 @@ function deploy_hyperspace_node() {
 
     # 使用 my.pem 文件运行 import-keys 命令
     echo "正在使用 my.pem 文件运行 import-keys 命令..."
+
+    # 确保环境变量更新
+    source /root/.bashrc
+    
+    # 运行 import-keys 命令
     aios-cli hive import-keys ./my.pem
     sleep 5
 
