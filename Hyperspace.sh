@@ -123,6 +123,7 @@ function deploy_hyperspace_node() {
 # 查看积分
 function view_points() {
     echo "正在查看积分..."
+    source /root/.bashrc
     aios-cli hive points
     sleep 2
 }
