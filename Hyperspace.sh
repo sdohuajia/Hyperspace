@@ -134,6 +134,10 @@ function deploy_hyperspace_node() {
     screen -S "$screen_name" -X stuff "echo '等待 5 秒后运行命令...'; aios-cli start --connect\n"
 
     echo "部署hyperspace节点完成，'aios-cli start --connect' 已在屏幕内运行，系统已恢复到后台。"
+
+    # 提示用户按任意键返回主菜单
+    read -n 1 -s -r -p "按任意键返回主菜单..."
+    main_menu
 }
 
 # 查看积分
