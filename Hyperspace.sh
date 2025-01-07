@@ -33,6 +33,7 @@ function deploy_hyperspace_node() {
     # 刷新环境变量
     echo "执行 'source /root/.bashrc' 更新环境变量"
     source /root/.bashrc
+    sleep 3
 
     # 提示输入屏幕名称，默认值为 'hyper'
     read -p "请输入屏幕名称 (默认值: hyper): " screen_name
@@ -76,7 +77,7 @@ function deploy_hyperspace_node() {
     # 确保环境变量已经生效
     echo "确保环境变量更新..."
     source /root/.bashrc
-    sleep 2  # 等待2秒确保环境变量加载
+    sleep 4  # 等待4秒确保环境变量加载
 
     # 打印当前 PATH，确保 aios-cli 在其中
     echo "当前 PATH: $PATH"
