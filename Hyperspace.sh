@@ -226,8 +226,8 @@ function view_logs() {
     LOG_FILE="/root/aios-cli.log"   # 日志文件路径
 
     if [ -f "$LOG_FILE" ]; then
-        echo "显示日志的最后 100 行:"
-        tail -n 100 "$LOG_FILE"   # 显示最后 100 行日志
+        echo "显示日志的最后 200 行:"
+        tail -n 200 "$LOG_FILE"   # 显示最后 200 行日志
     else
         echo "日志文件不存在: $LOG_FILE"
     fi
