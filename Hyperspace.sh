@@ -137,9 +137,9 @@ function deploy_hyperspace_node() {
     echo "使用 'aios-cli kill' 停止 'aios-cli start' 进程..."
     aios-cli kill
 
-    # 返回屏幕会话并重新启动 aios-cli
-    echo "返回到屏幕会话 '$screen_name' 并运行 'aios-cli start --connect'..."
-    screen -S "$screen_name" -X stuff "echo '等待 5 秒后运行命令...'; aios-cli start --connect\n"
+    # 在屏幕会话中运行 aios-cli start，并定向日志文件
+    echo "在屏幕会话 '$screen_name' 中运行 'aios-cli start --connect'，并将输出定向到 '/root/aios-cli.log'..."
+    screen -S "$screen_name" -X stuff "aios-cli start --connect >> /root/aios-cli.log 2>&1\n"
 
     echo "部署hyperspace节点完成，'aios-cli start --connect' 已在屏幕内运行，系统已恢复到后台。"
 
