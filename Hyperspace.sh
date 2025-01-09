@@ -193,7 +193,7 @@ while true; do
         echo "$(date): 检测到连接问题或认证失败，正在重启服务..." >> /root/monitor.log
         
         # 先发送 Ctrl+C
-        screen -S "$SCREEN_NAME" -X stuff \003'
+        screen -S "$SCREEN_NAME" -X stuff $'\003'
         sleep 5
         
         # 执行 aios-cli kill
