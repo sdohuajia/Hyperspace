@@ -13,19 +13,21 @@ function main_menu() {
         echo "退出脚本，请按键盘 ctrl + C 退出即可"
         echo "请选择要执行的操作:"
         echo "1. 部署hyperspace节点"
-        echo "2. 查看积分"
-        echo "3. 删除节点（停止节点）"
-        echo "4. 启用日志监控"
-        echo "5. 退出脚本"
+        echo "2. 查看日志"
+        echo "3. 查看积分"
+        echo "4. 删除节点（停止节点）"
+        echo "5. 启用日志监控"
+        echo "6. 退出脚本"
         echo "================================================================"
-        read -p "请输入选择 (1/2/3/4/5): " choice
+        read -p "请输入选择 (1/2/3/4/5/6): " choice
 
         case $choice in
             1)  deploy_hyperspace_node ;;
-            2)  view_points ;;
-            3)  delete_node ;;
-            4)  start_log_monitor ;;
-            5)  exit_script ;;
+            2)  view_logs ;; 
+            3)  view_points ;;
+            4)  delete_node ;;
+            5)  start_log_monitor ;;
+            6)  exit_script ;;
             *)  echo "无效选择，请重新输入！"; sleep 2 ;;
         esac
     done
@@ -196,6 +198,23 @@ function start_log_monitor() {
 
     echo "日志监控已启动，后台运行中。"
     sleep 2
+
+    # 提示用户按任意键返回主菜单
+    read -n 1 -s -r -p "按任意键返回主菜单..."
+    main_menu
+}
+
+# 查看日志
+function view_logs() {
+    echo "正在查看日志..."
+    LOG_FILE="/root/aios-cli.log"   # 日志文件路径
+
+    if [ -f "$LOG_FILE" ]; then
+        echo "显示日志的最后 100 行:"
+        tail -n 100 "$LOG_FILE"   # 显示最后 100 行日志
+    else
+        echo "日志文件不存在: $LOG_FILE"
+    fi
 
     # 提示用户按任意键返回主菜单
     read -n 1 -s -r -p "按任意键返回主菜单..."
