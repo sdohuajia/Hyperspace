@@ -177,25 +177,42 @@ function delete_node() {
 function start_log_monitor() {
     echo "启动日志监控..."
 
-    # 后台运行日志监控脚本
-    nohup bash -c '
-    LOG_FILE="/root/aios-cli.log"  # 定义日志文件路径
-    SCREEN_NAME="hyper"
+    # 创建监控脚本文件
+    cat > /root/monitor.sh << 'EOL'
+#!/bin/bash
+LOG_FILE="/root/aios-cli.log"
+SCREEN_NAME="hyper"
+LAST_RESTART=$(date +%s)
+MIN_RESTART_INTERVAL=300
 
-    while true; do
-        if grep -q "Last pong received" "$LOG_FILE"; then
-            echo "检测到连接问题，重启 'aios-cli start --connect'..."
+while true; do
+    current_time=$(date +%s)
+    if tail -n 4 "$LOG_FILE" | grep -q "Last pong received.*Sending reconnect signal" && \
+       [ $((current_time - LAST_RESTART)) -gt $MIN_RESTART_INTERVAL ]; then
+        echo "$(date): 检测到连续的连接问题，正在重启服务..." >> /root/monitor.log
+        
+        screen -S "$SCREEN_NAME" -X stuff $'\003'
+        sleep 5
+        
+        echo "$(date): 清理旧日志..." > "$LOG_FILE"
+        
+        screen -S "$SCREEN_NAME" -X stuff "aios-cli start --connect >> /root/aios-cli.log 2>&1\n"
+        
+        LAST_RESTART=$current_time
+        echo "$(date): 服务已重启" >> /root/monitor.log
+    fi
+    sleep 30
+done
+EOL
 
-            # 在现有会话中发送 Ctrl+C 并重新启动命令
-            screen -S "$SCREEN_NAME" -X stuff $'\003'  # 发送 Ctrl+C
-            sleep 2
-            screen -S "$SCREEN_NAME" -X stuff "aios-cli start --connect >> /root/aios-cli.log 2>&1; echo '重启完成！'\n"  # 重启并定向日志
-        fi
-        sleep 60  # 每分钟检查一次
-    done
-    ' > log_monitor_output.log 2>&1 &
+    # 添加执行权限
+    chmod +x /root/monitor.sh
+
+    # 在后台启动监控脚本
+    nohup /root/monitor.sh > /root/monitor.log 2>&1 &
 
     echo "日志监控已启动，后台运行中。"
+    echo "可以通过查看 /root/monitor.log 来检查监控状态"
     sleep 2
 
     # 提示用户按任意键返回主菜单
