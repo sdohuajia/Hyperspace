@@ -190,13 +190,19 @@ while true; do
     if (tail -n 4 "$LOG_FILE" | grep -q "Last pong received.*Sending reconnect signal" || \
         tail -n 4 "$LOG_FILE" | grep -q "Failed to authenticate.*503 Service Unavailable") && \
        [ $((current_time - LAST_RESTART)) -gt $MIN_RESTART_INTERVAL ]; then
-        echo "$(date): 检测到连续的连接问题，正在重启服务..." >> /root/monitor.log
+        echo "$(date): 检测到连接问题或认证失败，正在重启服务..." >> /root/monitor.log
         
-        screen -S "$SCREEN_NAME" -X stuff $'\003'
+        # 先发送 Ctrl+C
+        screen -S "$SCREEN_NAME" -X stuff \003'
+        sleep 5
+        
+        # 执行 aios-cli kill
+        screen -S "$SCREEN_NAME" -X stuff "aios-cli kill\n"
         sleep 5
         
         echo "$(date): 清理旧日志..." > "$LOG_FILE"
         
+        # 重新启动服务
         screen -S "$SCREEN_NAME" -X stuff "aios-cli start --connect >> /root/aios-cli.log 2>&1\n"
         
         LAST_RESTART=$current_time
