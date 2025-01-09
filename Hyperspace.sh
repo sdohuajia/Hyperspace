@@ -177,7 +177,7 @@ function start_log_monitor() {
 
     # 后台运行日志监控脚本
     nohup bash -c '
-    LOG_FILE="/path/to/your/log/file.log" # 替换为你的日志文件路径
+    LOG_FILE="/root/aios-cli.log"  # 定义日志文件路径
     SCREEN_NAME="hyper"
 
     while true; do
@@ -185,12 +185,12 @@ function start_log_monitor() {
             echo "检测到连接问题，重启 'aios-cli start --connect'..."
 
             # 在现有会话中发送 Ctrl+C 并重新启动命令
-            screen -S "$SCREEN_NAME" -X stuff $'\003' # 发送 Ctrl+C
+            screen -S "$SCREEN_NAME" -X stuff $'\003'  # 发送 Ctrl+C
             sleep 2
-            screen -S "$SCREEN_NAME" -X stuff "aios-cli start --connect\n"
+            screen -S "$SCREEN_NAME" -X stuff "aios-cli start --connect >> /root/aios-cli.log 2>&1\n"  # 重启并定向日志
             echo "重启完成！"
         fi
-        sleep 60 # 每分钟检查一次
+        sleep 60  # 每分钟检查一次
     done
     ' &> log_monitor_output.log &
 
