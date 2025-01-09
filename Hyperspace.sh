@@ -12,15 +12,17 @@ function main_menu() {
         echo "1. 部署hyperspace节点"
         echo "2. 查看积分"
         echo "3. 删除节点（停止节点）"
-        echo "4. 退出脚本"
+        echo "4. 启用日志监控"
+        echo "5. 退出脚本"
         echo "================================================================"
-        read -p "请输入选择 (1/2/3/4): " choice
+        read -p "请输入选择 (1/2/3/4/5): " choice
 
         case $choice in
             1)  deploy_hyperspace_node ;;
             2)  view_points ;;
             3)  delete_node ;;
-            4)  exit_script ;;
+            4)  start_log_monitor ;;
+            5)  exit_script ;;
             *)  echo "无效选择，请重新输入！"; sleep 2 ;;
         esac
     done
@@ -160,6 +162,37 @@ function delete_node() {
     sleep 2
     
     echo "'aios-cli kill' 执行完成，节点已停止。"
+
+    # 提示用户按任意键返回主菜单
+    read -n 1 -s -r -p "按任意键返回主菜单..."
+    main_menu
+}
+
+# 启用日志监控
+function start_log_monitor() {
+    echo "启动日志监控..."
+
+    # 后台运行日志监控脚本
+    nohup bash -c '
+    LOG_FILE="/path/to/your/log/file.log" # 替换为你的日志文件路径
+    SCREEN_NAME="hyper"
+
+    while true; do
+        if grep -q "Last pong received" "$LOG_FILE"; then
+            echo "检测到连接问题，重启 'aios-cli start --connect'..."
+
+            # 在现有会话中发送 Ctrl+C 并重新启动命令
+            screen -S "$SCREEN_NAME" -X stuff $'\003' # 发送 Ctrl+C
+            sleep 2
+            screen -S "$SCREEN_NAME" -X stuff "aios-cli start --connect\n"
+            echo "重启完成！"
+        fi
+        sleep 60 # 每分钟检查一次
+    done
+    ' &> log_monitor_output.log &
+
+    echo "日志监控已启动，后台运行中。"
+    sleep 2
 
     # 提示用户按任意键返回主菜单
     read -n 1 -s -r -p "按任意键返回主菜单..."
