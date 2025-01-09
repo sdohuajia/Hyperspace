@@ -193,7 +193,7 @@ function start_log_monitor() {
         fi
         sleep 60  # 每分钟检查一次
     done
-    ' &> log_monitor_output.log &
+    ' > log_monitor_output.log 2>&1 &
 
     echo "日志监控已启动，后台运行中。"
     sleep 2
