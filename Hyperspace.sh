@@ -188,7 +188,7 @@ MIN_RESTART_INTERVAL=300
 while true; do
     current_time=$(date +%s)
     if (tail -n 4 "$LOG_FILE" | grep -q "Last pong received.*Sending reconnect signal" || \
-        tail -n 4 "$LOG_FILE" | grep -q "Failed to authenticate.*503 Service Unavailable") && \
+        tail -n 4 "$LOG_FILE" | grep -q "Failed to authenticate") && \
        [ $((current_time - LAST_RESTART)) -gt $MIN_RESTART_INTERVAL ]; then
         echo "$(date): 检测到连接问题或认证失败，正在重启服务..." >> /root/monitor.log
         
