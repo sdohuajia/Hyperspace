@@ -187,11 +187,14 @@ MIN_RESTART_INTERVAL=300
 
 while true; do
     current_time=$(date +%s)
+    
+    # 检测到以下几种情况，触发重启
     if (tail -n 4 "$LOG_FILE" | grep -q "Last pong received.*Sending reconnect signal" || \
         tail -n 4 "$LOG_FILE" | grep -q "Failed to authenticate" || \
-        tail -n 4 "$LOG_FILE" | grep -q "Failed to connect to Hive") && \
+        tail -n 4 "$LOG_FILE" | grep -q "Failed to connect to Hive" || \
+        tail -n 4 "$LOG_FILE" | grep -q "Another instance is already running") && \
        [ $((current_time - LAST_RESTART)) -gt $MIN_RESTART_INTERVAL ]; then
-        echo "$(date): 检测到连接问题或认证失败，正在重启服务..." >> /root/monitor.log
+        echo "$(date): 检测到连接问题、认证失败、连接到 Hive 失败或实例已在运行，正在重启服务..." >> /root/monitor.log
         
         # 先发送 Ctrl+C
         screen -S "$SCREEN_NAME" -X stuff $'\003'
