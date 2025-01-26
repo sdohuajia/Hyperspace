@@ -208,7 +208,7 @@ while true; do
         tail -n 4 "$LOG_FILE" | grep -q "Failed to connect to Hive" || \
         tail -n 4 "$LOG_FILE" | grep -q "Another instance is already running" || \
         tail -n 4 "$LOG_FILE" | grep -q "\"message\": \"Internal server error\"" || \
-        tail -n 4 "$LOG_FILE" | grep -q "thread 'main' panicked at aios-cli/src/main.rs:181:39: called `Option::unwrap()` on a `None` value") && \
+        tail -n 4 "$LOG_FILE" | grep -q "thread 'main' panicked at aios-cli/src/main.rs:181:39: called \`Option::unwrap()\` on a \`None\` value") && \
        [ $((current_time - LAST_RESTART)) -gt $MIN_RESTART_INTERVAL ]; then
         echo "$(date): 检测到连接问题、认证失败、连接到 Hive 失败、实例已在运行、内部服务器错误或 'Option::unwrap()' 错误，正在重启服务..." >> /root/monitor.log
         
