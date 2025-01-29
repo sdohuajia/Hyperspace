@@ -17,9 +17,10 @@ function main_menu() {
         echo "3. 查看积分"
         echo "4. 删除节点（停止节点）"
         echo "5. 启用日志监控"
-        echo "6. 退出脚本"
+        echo "6. 查看使用的私钥"
+        echo "7. 退出脚本"
         echo "================================================================"
-        read -p "请输入选择 (1/2/3/4/5/6): " choice
+        read -p "请输入选择 (1/2/3/4/5/6/7): " choice
 
         case $choice in
             1)  deploy_hyperspace_node ;;
@@ -27,7 +28,8 @@ function main_menu() {
             3)  view_points ;;
             4)  delete_node ;;
             5)  start_log_monitor ;;
-            6)  exit_script ;;
+            6)  view_private_key ;;
+            7)  exit_script ;;
             *)  echo "无效选择，请重新输入！"; sleep 2 ;;
         esac
     done
@@ -213,7 +215,7 @@ while true; do
         echo "$(date): 检测到连接问题、认证失败、连接到 Hive 失败、实例已在运行、内部服务器错误或 'Option::unwrap()' 错误，正在重启服务..." >> /root/monitor.log
         
         # 先发送 Ctrl+C
-        screen -S "$SCREEN_NAME" -X stuff $'\003'
+        screen -S "$SCREEN_NAME" -X stuff \003'
         sleep 5
         
         # 执行 aios-cli kill
@@ -258,6 +260,17 @@ function view_logs() {
     else
         echo "日志文件不存在: $LOG_FILE"
     fi
+
+    # 提示用户按任意键返回主菜单
+    read -n 1 -s -r -p "按任意键返回主菜单..."
+    main_menu
+}
+
+# 查看使用的私钥
+function view_private_key() {
+    echo "正在查看使用的私钥..."
+    aios-cli hive whoami
+    sleep 2
 
     # 提示用户按任意键返回主菜单
     read -n 1 -s -r -p "按任意键返回主菜单..."
