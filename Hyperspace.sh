@@ -215,7 +215,7 @@ while true; do
         echo "$(date): 检测到连接问题、认证失败、连接到 Hive 失败、实例已在运行、内部服务器错误或 'Option::unwrap()' 错误，正在重启服务..." >> /root/monitor.log
         
         # 先发送 Ctrl+C
-        screen -S "$SCREEN_NAME" -X stuff \003'
+        screen -S "$SCREEN_NAME" -X stuff $'\003'
         sleep 5
         
         # 执行 aios-cli kill
