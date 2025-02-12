@@ -3,6 +3,26 @@
 # 脚本保存路径
 SCRIPT_PATH="$HOME/Hyperspace.sh"
 
+# 检查并安装 screen
+function check_and_install_screen() {
+    if ! command -v screen &> /dev/null; then
+        echo "screen 未安装，正在安装..."
+        # 根据您的系统选择合适的安装命令
+        if [ -x "$(command -v apt)" ]; then
+            sudo apt update && sudo apt install -y screen
+        elif [ -x "$(command -v yum)" ]; then
+            sudo yum install -y screen
+        elif [ -x "$(command -v dnf)" ]; then
+            sudo dnf install -y screen
+        else
+            echo "无法找到合适的包管理器，请手动安装 screen。"
+            exit 1
+        fi
+    else
+        echo "screen 已安装。"
+    fi
+}
+
 # 主菜单函数
 function main_menu() {
     while true; do
