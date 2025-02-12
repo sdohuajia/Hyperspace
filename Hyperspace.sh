@@ -18,9 +18,10 @@ function main_menu() {
         echo "4. 删除节点（停止节点）"
         echo "5. 启用日志监控"
         echo "6. 查看使用的私钥"
-        echo "7. 退出脚本"
+        echo "7. 查看aios daemon状态"
+        echo "8. 退出脚本"
         echo "================================================================"
-        read -p "请输入选择 (1/2/3/4/5/6/7): " choice
+        read -p "请输入选择 (1/2/3/4/5/6/7/8): " choice
 
         case $choice in
             1)  deploy_hyperspace_node ;;
@@ -29,7 +30,8 @@ function main_menu() {
             4)  delete_node ;;
             5)  start_log_monitor ;;
             6)  view_private_key ;;
-            7)  exit_script ;;
+            7)  view_status ;;
+            8)  exit_script ;;
             *)  echo "无效选择，请重新输入！"; sleep 2 ;;
         esac
     done
@@ -270,6 +272,17 @@ function view_logs() {
 function view_private_key() {
     echo "正在查看使用的私钥..."
     aios-cli hive whoami
+    sleep 2
+
+    # 提示用户按任意键返回主菜单
+    read -n 1 -s -r -p "按任意键返回主菜单..."
+    main_menu
+}
+
+# 查看aios daemon状态
+function view_status() {
+    echo "正在查看aios状态..."
+    aios-cli status
     sleep 2
 
     # 提示用户按任意键返回主菜单
