@@ -30,9 +30,10 @@ function main_menu() {
         echo "5. 启用日志监控"
         echo "6. 查看使用的私钥"
         echo "7. 查看aios daemon状态"
-        echo "8. 退出脚本"
+        echo "8. 启用积分监控"
+        echo "9. 退出脚本"
         echo "================================================================"
-        read -p "请输入选择 (1/2/3/4/5/6/7/8): " choice
+        read -p "请输入选择 (1/2/3/4/5/6/7/8/9): " choice
 
         case $choice in
             1)  deploy_hyperspace_node ;;
@@ -42,7 +43,8 @@ function main_menu() {
             5)  start_log_monitor ;;
             6)  view_private_key ;;
             7)  view_status ;;
-            8)  exit_script ;;
+            8)  start_points_monitor ;;
+            9)  exit_script ;;
             *)  echo "无效选择，请重新输入！"; sleep 2 ;;
         esac
     done
@@ -255,6 +257,57 @@ EOL
 
     echo "日志监控已启动，后台运行中。"
     echo "可以通过查看 /root/monitor.log 来检查监控状态"
+    sleep 2
+
+    # 提示用户按任意键返回主菜单
+    read -n 1 -s -r -p "按任意键返回主菜单..."
+    main_menu
+}
+
+# 启用积分监控
+function start_points_monitor() {
+    echo "启动积分监控..."
+
+    # 创建积分监控脚本文件
+    cat > /root/points_monitor.sh << 'EOL'
+#!/bin/bash
+LOG_FILE="/root/aios-cli.log"
+SCREEN_NAME="hyper"
+LAST_POINTS=0
+MIN_RESTART_INTERVAL=300
+
+while true; do
+    CURRENT_POINTS=$(aios-cli hive points)
+    
+    if [ "$CURRENT_POINTS" -eq "$LAST_POINTS" ]; then
+        echo "$(date): 积分没有增加，正在重启服务..." >> /root/points_monitor.log
+        
+        # 重启服务
+        screen -S "$SCREEN_NAME" -X stuff $'\003'
+        sleep 5
+        screen -S "$SCREEN_NAME" -X stuff "aios-cli kill\n"
+        sleep 5
+        
+        echo "$(date): 清理旧日志..." > "$LOG_FILE"
+        screen -S "$SCREEN_NAME" -X stuff "aios-cli start --connect >> /root/aios-cli.log 2>&1\n"
+        
+        LAST_POINTS=$CURRENT_POINTS
+    else
+        LAST_POINTS=$CURRENT_POINTS
+    fi
+
+    sleep 7200  # 每2小时检查一次积分变化
+done
+EOL
+
+    # 添加执行权限
+    chmod +x /root/points_monitor.sh
+
+    # 在后台启动积分监控脚本
+    nohup /root/points_monitor.sh > /root/points_monitor.log 2>&1 &
+
+    echo "积分监控已启动，后台运行中。"
+    echo "可以通过查看 /root/points_monitor.log 来检查监控状态"
     sleep 2
 
     # 提示用户按任意键返回主菜单
