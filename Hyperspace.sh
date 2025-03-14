@@ -277,7 +277,7 @@ LAST_POINTS=0
 MIN_RESTART_INTERVAL=300
 
 while true; do
-    CURRENT_POINTS=$(aios-cli hive points)
+    CURRENT_POINTS=$(aios-cli hive points | grep -o '[0-9]\+')
     
     if [ "$CURRENT_POINTS" -eq "$LAST_POINTS" ]; then
         echo "$(date): 积分没有增加，正在重启服务..." >> /root/points_monitor.log
