@@ -118,13 +118,14 @@ function deploy_hyperspace_node() {
     # 提示用户输入私钥并保存为 my.pem 文件
     echo "请输入你的私钥（按 CTRL+D 结束）："
     cat > my.pem
-
-    # 使用 my.pem 文件运行 import-keys 命令
-    echo "正在使用 my.pem 文件运行 import-keys 命令..."
     
-    # 运行 import-keys 命令
-    aios-cli hive import-keys ./my.pem
-    sleep 5
+    if [ $(stat -c %s my.pem) -gt 20 ]; then
+        echo "正在使用 my.pem 文件运行 import-keys 命令..."
+        aios-cli hive import-keys ./my.pem
+        sleep 5
+    else
+        echo "my.pem 文件为空，跳过 import-keys 命令"
+    fi
 
     # 定义模型变量
     model="hf:TheBloke/phi-2-GGUF:phi-2.Q4_K_M.gguf"
