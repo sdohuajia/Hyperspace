@@ -124,7 +124,6 @@ function deploy_hyperspace_node() {
         aios-cli hive import-keys ./my.pem
         sleep 5
     else
-        rm -rf my.pem
         echo "my.pem 文件为空，跳过 import-keys 命令"
     fi
 
