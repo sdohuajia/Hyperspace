@@ -3,6 +3,7 @@
 # 脚本保存路径
 SCRIPT_PATH="$HOME/Hyperspace.sh"
 
+
 # 检查并安装 screen
 function check_and_install_screen() {
     if ! command -v screen &> /dev/null; then
@@ -62,13 +63,26 @@ function deploy_hyperspace_node() {
     # 更新当前shell的PATH
     export PATH="$NEW_PATH"
 
-    # 验证aios-cli是否可用
-    if ! command -v aios-cli &> /dev/null; then
+    # 确保 ~/.local/bin 在 PATH 中
+    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+
+    # 确保 /root/.aios 在 PATH 中
+    if [[ ":$PATH:" != *":/root/.aios:"* ]]; then
+        export PATH="/root/.aios:$PATH"
+    fi
+
+    # 打印当前 PATH，确保 aios-cli 在其中
+    echo "当前 PATH: $PATH"
+
+    # 验证 aios-cli 是否可用
+    if ! command -v /root/.aios/aios-cli &> /dev/null; then
         echo "aios-cli 命令未找到，正在重试..."
         sleep 3
-        # 再次尝试更新PATH
+        # 再次尝试更新 PATH
         export PATH="$PATH:/root/.local/bin"
-        if ! command -v aios-cli &> /dev/null; then
+        if ! command -v /root/.aios/aios-cli &> /dev/null; then
             echo "无法找到 aios-cli 命令，请手动运行 'source /root/.bashrc' 后重试"
             read -n 1 -s -r -p "按任意键返回主菜单..."
             return
@@ -97,7 +111,7 @@ function deploy_hyperspace_node() {
 
     # 在屏幕会话中运行 aios-cli start
     echo "在屏幕会话 '$screen_name' 中运行 'aios-cli start' 命令..."
-    screen -S "$screen_name" -X stuff "aios-cli start\n"
+    screen -S "$screen_name" -X stuff "/root/.aios/aios-cli start\n"
 
     # 等待几秒钟确保命令执行
     sleep 5
@@ -106,11 +120,6 @@ function deploy_hyperspace_node() {
     echo "退出屏幕会话 '$screen_name'..."
     screen -S "$screen_name" -X detach
     sleep 5
-    
-    # 确保 ~/.local/bin 在 PATH 中
-    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-    export PATH="$HOME/.local/bin:$PATH"
-    fi
 
     # 打印当前 PATH，确保 aios-cli 在其中
     echo "当前 PATH: $PATH"
@@ -123,16 +132,16 @@ function deploy_hyperspace_node() {
     echo "正在使用 my.pem 文件运行 import-keys 命令..."
     
     # 运行 import-keys 命令
-    aios-cli hive import-keys ./my.pem
+    /root/.aios/aios-cli hive import-keys ./my.pem
     sleep 5
 
     # 定义模型变量
     model="hf:TheBloke/phi-2-GGUF:phi-2.Q4_K_M.gguf"
 
     # 添加模型并重试
-    echo "正在通过命令 'aios-cli models add' 添加模型..."
+    echo "正在通过命令 '/root/.aios/aios-cli models add' 添加模型..."
     while true; do
-        if aios-cli models add "$model"; then
+        if /root/.aios/aios-cli models add "$model"; then
             echo "模型添加成功并且下载完成！"
             break
         else
@@ -145,7 +154,7 @@ function deploy_hyperspace_node() {
     echo "正在登录并选择等级..."
 
     # 登录到 Hive
-    aios-cli hive login
+    /root/.aios/aios-cli hive login
 
     # 提示用户选择等级
     echo "请选择等级（1-5）："
@@ -153,7 +162,7 @@ function deploy_hyperspace_node() {
         case $tier in
             1|2|3|4|5)
                 echo "你选择了等级 $tier"
-                aios-cli hive select-tier $tier
+                /root/.aios/aios-cli hive select-tier $tier
                 break
                 ;;
             *)
@@ -163,18 +172,18 @@ function deploy_hyperspace_node() {
     done
 
     # 连接到 Hive
-    aios-cli hive connect
+    /root/.aios/aios-cli hive connect
     sleep 5
 
     # 停止 aios-cli 进程
-    echo "使用 'aios-cli kill' 停止 'aios-cli start' 进程..."
-    aios-cli kill
+    echo "使用 '/root/.aios/aios-cli kill' 停止 'aios-cli start' 进程..."
+    /root/.aios/aios-cli kill
 
     # 在屏幕会话中运行 aios-cli start，并定向日志文件
-    echo "在屏幕会话 '$screen_name' 中运行 'aios-cli start --connect'，并将输出定向到 '/root/aios-cli.log'..."
-    screen -S "$screen_name" -X stuff "aios-cli start --connect >> /root/aios-cli.log 2>&1\n"
+    echo "在屏幕会话 '$screen_name' 中运行 '/root/.aios/aios-cli start --connect'，并将输出定向到 '/root/aios-cli.log'..."
+    screen -S "$screen_name" -X stuff "/root/.aios/aios-cli start --connect >> /root/aios-cli.log 2>&1\n"
 
-    echo "部署hyperspace节点完成，'aios-cli start --connect' 已在屏幕内运行，系统已恢复到后台。"
+    echo "部署hyperspace节点完成，'/root/.aios/aios-cli start --connect' 已在屏幕内运行，系统已恢复到后台。"
 
     # 提示用户按任意键返回主菜单
     read -n 1 -s -r -p "按任意键返回主菜单..."
