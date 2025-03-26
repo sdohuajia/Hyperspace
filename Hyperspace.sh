@@ -107,10 +107,10 @@ function deploy_hyperspace_node() {
     screen -S "$screen_name" -X detach
     sleep 5
     
-    # 确保环境变量已经生效
-    echo "确保环境变量更新..."
-    source /root/.bashrc
-    sleep 4  # 等待4秒确保环境变量加载
+    # 确保 ~/.local/bin 在 PATH 中
+    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    export PATH="$HOME/.local/bin:$PATH"
+    fi
 
     # 打印当前 PATH，确保 aios-cli 在其中
     echo "当前 PATH: $PATH"
