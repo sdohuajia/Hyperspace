@@ -216,35 +216,56 @@ LOG_FILE="/root/aios-cli.log"
 SCREEN_NAME="hyper"
 LAST_RESTART=$(date +%s)
 MIN_RESTART_INTERVAL=300
+AIOS_CMD="aios-cli start --connect"
+
+restart_service() {
+    current_time=$1
+    screen -ls | grep "$SCREEN_NAME" &>/dev/null
+    if [ $? -eq 0 ]; then
+        echo "找到现有的 '$SCREEN_NAME' 屏幕会话"
+    else
+        echo "创建一个名为 '$SCREEN_NAME' 的屏幕会话..."
+        screen -S "$SCREEN_NAME" -dm
+    fi
+    
+    echo "$(date): 正在重启服务..." >> /root/monitor.log
+    
+    # 先发送 Ctrl+C 终止进程
+    screen -S "$SCREEN_NAME" -X stuff $'\003'
+    sleep 5
+    
+    # 执行 aios-cli kill
+    screen -S "$SCREEN_NAME" -X stuff "aios-cli kill\n"
+    sleep 5
+    
+    # 清理旧日志
+    echo "$(date): 清理旧日志..." > "$LOG_FILE"
+    
+    # 重新启动服务
+    screen -S "$SCREEN_NAME" -X stuff "/root/.aios/aios-cli start --connect >> /root/aios-cli.log 2>&1\n"
+    
+    LAST_RESTART=$current_time
+    echo "$(date): 服务已重启" >> /root/monitor.log
+}
+
+
 
 while true; do
     current_time=$(date +%s)
     
     # 检测到以下几种情况，触发重启
-    if (tail -n 4 "$LOG_FILE" | grep -q "Last pong received.*Sending reconnect signal" || \
+    if ! pgrep -f "$AIOS_CMD" > /dev/null; then
+        echo "$(date): 进程 $AIOS_CMD 未运行，正在重启服务..." >> /root/monitor.log
+        restart_service "$current_time"
+    elif (tail -n 4 "$LOG_FILE" | grep -q "Last pong received.*Sending reconnect signal" || \
         tail -n 4 "$LOG_FILE" | grep -q "Failed to authenticate" || \
         tail -n 4 "$LOG_FILE" | grep -q "Failed to connect to Hive" || \
         tail -n 4 "$LOG_FILE" | grep -q "Another instance is already running" || \
         tail -n 4 "$LOG_FILE" | grep -q "\"message\": \"Internal server error\"" || \
-        tail -n 4 "$LOG_FILE" | grep -q "thread 'main' panicked at aios-cli/src/main.rs:181:39: called \`Option::unwrap()\` on a \`None\` value") && \
+        tail -n 4 "$LOG_FILE" | grep -q "thread 'main' panicked at aios-cli/src/main.rs:181:39: called \Option::unwrap()\ on a \None\ value") && \
        [ $((current_time - LAST_RESTART)) -gt $MIN_RESTART_INTERVAL ]; then
         echo "$(date): 检测到连接问题、认证失败、连接到 Hive 失败、实例已在运行、内部服务器错误或 'Option::unwrap()' 错误，正在重启服务..." >> /root/monitor.log
-        
-        # 先发送 Ctrl+C
-        screen -S "$SCREEN_NAME" -X stuff $'\003'
-        sleep 5
-        
-        # 执行 aios-cli kill
-        screen -S "$SCREEN_NAME" -X stuff "aios-cli kill\n"
-        sleep 5
-        
-        echo "$(date): 清理旧日志..." > "$LOG_FILE"
-        
-        # 重新启动服务
-        screen -S "$SCREEN_NAME" -X stuff "aios-cli start --connect >> /root/aios-cli.log 2>&1\n"
-        
-        LAST_RESTART=$current_time
-        echo "$(date): 服务已重启" >> /root/monitor.log
+        restart_service "$current_time"
     fi
     sleep 30
 done
@@ -274,30 +295,46 @@ function start_points_monitor() {
 #!/bin/bash
 LOG_FILE="/root/aios-cli.log"
 SCREEN_NAME="hyper"
-LAST_POINTS=0
 MIN_RESTART_INTERVAL=300
+POINTS_LOG_FILE="/root/points_monitor.log"
+
+restart_service() {
+    screen -ls | grep "$SCREEN_NAME" &>/dev/null
+    if [ $? -eq 0 ]; then
+        echo "找到现有的 '$SCREEN_NAME' 屏幕会话"
+    else
+        # 创建一个新的屏幕会话
+        echo "创建一个名为 '$SCREEN_NAME' 的屏幕会话..."
+        screen -S "$SCREEN_NAME" -dm
+    fi
+    
+    echo "$(date): 正在重启服务..." >> "$POINTS_LOG_FILE"
+    
+    # 先发送 Ctrl+C 终止进程
+    screen -S "$SCREEN_NAME" -X stuff $'\003'
+    sleep 5
+    
+    # 执行 aios-cli kill
+    screen -S "$SCREEN_NAME" -X stuff "aios-cli kill\n"
+    sleep 5
+
+    # 清理旧日志
+    echo "$(date): 清理旧日志..." > "$LOG_FILE"
+    
+    # 重新启动服务
+    screen -S "$SCREEN_NAME" -X stuff "/root/.aios/aios-cli >> /root/aios-cli.log 2>&1\n"
+}
 
 while true; do
-    CURRENT_POINTS=$(aios-cli hive points | grep -o '[0-9]\+')
-    
-    if [ "$CURRENT_POINTS" -eq "$LAST_POINTS" ]; then
-        echo "$(date): 积分没有增加，正在重启服务..." >> /root/points_monitor.log
-        
-        # 重启服务
-        screen -S "$SCREEN_NAME" -X stuff $'\003'
-        sleep 5
-        screen -S "$SCREEN_NAME" -X stuff "aios-cli kill\n"
-        sleep 5
-        
-        echo "$(date): 清理旧日志..." > "$LOG_FILE"
-        screen -S "$SCREEN_NAME" -X stuff "aios-cli start --connect >> /root/aios-cli.log 2>&1\n"
-        
-        LAST_POINTS=$CURRENT_POINTS
-    else
-        LAST_POINTS=$CURRENT_POINTS
+    OUTPUT=$(/root/.aios/aios-cli hive points)
+    echo "$(date): 输出: $OUTPUT" >> "$POINTS_LOG_FILE"
+    if [[ ! "$OUTPUT" =~ "Points:" ]]; then
+        echo "$(date): 积分异常，正在重启服务..." >> "$POINTS_LOG_FILE"
+        restart_service
+    else:
+        echo "$(date): 积分正常，正在重启服务..." >> "$POINTS_LOG_FILE"
     fi
-
-    sleep 7200  # 每2小时检查一次积分变化
+    sleep 7200
 done
 EOL
 
