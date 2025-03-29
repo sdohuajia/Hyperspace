@@ -332,7 +332,7 @@ while true; do
         echo "$(date): 积分异常，正在重启服务..." >> "$POINTS_LOG_FILE"
         restart_service
     else:
-        echo "$(date): 积分正常，正在重启服务..." >> "$POINTS_LOG_FILE"
+        echo "$(date): 积分正常..." >> "$POINTS_LOG_FILE"
     fi
     sleep 7200
 done
